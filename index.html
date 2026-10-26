@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SISCOINTEC - Mockup de Trazabilidad de Activos</title>
+    <!-- CSS / Estilos integrados -->
+    <style>
+        :root {
+            --primary: #1e293b;
+            --accent: #2563eb;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #334155;
+            --border: #e2e8f0;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --success: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* LOGIN OVERLAY */
+        #login-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .login-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 400px;
+            text-align: center;
+        }
+
+        .login-card h2 {
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .login-card p {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 1.5rem;
+        }
+
+        .role-btn {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: #f1f5f9;
+            color: var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .role-btn:hover {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .role-btn small {
+            display: block;
+            font-weight: normal;
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+
+        /* LAYOUT PRINCIPAL */
+        #app {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* SIDEBAR */
+        aside {
+            width: 260px;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand {
+            padding: 1.5rem;
+            font-size: 1.25rem;
+            font-weight: bold;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            list-style: none;
+            padding: 1rem 0;
+            flex-grow: 1;
+        }
+
+        .nav-links li a {
+            display: block;
+            padding: 0.8rem 1.5rem;
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: 0.2s;
+        }
+
+        .nav-links li a:hover, .nav-links li a.active {
+            color: white;
+            background: #334155;
+            border-left: 4px solid var(--accent);
+        }
+
+        .user-info {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #334155;
+            background: #0f172a;
+        }
+
+        .user-info .role-badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            background: var(--accent);
+            font-size: 0.75rem;
+            border-radius: 4px;
+            margin-top: 0.3rem;
+        }
+
+        /* CONTENIDO PRINCIPAL */
+        main {
+            flex-grow: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        /* TABLAS Y CARDS */
+        .grid-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 1.25rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .card h4 {
+            color: #64748b;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .card .number {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .section-block {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* TABLA DE INVENTARIO */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status.disponible { background: #d1fae5; color: #065f46; }
+        .status.asignado { background: #dbeafe; color: #1e40af; }
+        .status.reparacion { background: #fef3c7; color: #92400e; }
+        .status.reciclado { background: #fee2e2; color: #991b1b; }
+
+        /* FORMULARIO */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 0.8rem;
+            margin-bottom: 0.3rem;
+            font-weight: 600;
+        }
+
+        .form-group input, .form-group select {
+            padding: 0.6rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+        }
+
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .action-btn {
+            padding: 0.3rem 0.6rem;
+            font-size: 0.75rem;
+            margin-right: 0.3rem;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .alert-box {
+            padding: 0.75rem;
+            background: #eff6ff;
+            border-left: 4px solid var(--accent);
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- OVERLAY DE LOGIN / SELECCIÓN DE ROL -->
+    <div id="login-overlay">
+        <div class="login-card">
+            <h2>SISCOINTEC</h2>
+            <p>Selecciona un rol para simular el inicio de sesión:</p>
+            
+            <button class="role-btn" onclick="login('bodeguero', 'Juan Pérez (Bodega)')">
+                📦 Bodeguero
+                <small>Permisos: Registro de activos, recepción y movimientos de stock.</small>
+            </button>
+
+            <button class="role-btn" onclick="login('tecnico', 'Carlos Soto (Soporte TI)')">
+                💻 Técnico Informático
+                <small>Permisos: Mantenimiento, reasignación y baja/reciclaje de equipos.</small>
+            </button>
+
+            <button class="role-btn" onclick="login('jefatura', 'María González (Gerencia Operaciones)')">
+                📊 Jefatura / Revisión
+                <small>Permisos: Auditoría global, eliminación directa e informes ejecutivos.</small>
+            </button>
+        </div>
+    </div>
+
+    <!-- MAIN APP STRUCTURE -->
+    <div id="app">
+        <!-- SIDEBAR -->
+        <aside>
+            <div class="brand">📦 SISCOINTEC</div>
+            <ul class="nav-links">
+                <li><a href="#" class="active" onclick="showTab('tab-inventario', this)">📋 Inventario General</a></li>
+                <li><a href="#" onclick="showTab('tab-ingreso', this)">➕ Ingreso de Equipos</a></li>
+                <li><a href="#" onclick="showTab('tab-movimientos', this)">🔄 Movimientos</a></li>
+                <li><a href="#" onclick="showTab('tab-informes', this)">📊 Informes y Reportes</a></li>
+            </ul>
+            <div class="user-info">
+                <div id="user-name-display" style="font-size: 0.9rem; font-weight: bold;">Usuario</div>
+                <div class="role-badge" id="user-role-display">Rol</div>
+                <br><br>
+                <a href="#" onclick="location.reload()" style="color: #ef4444; font-size: 0.8rem; text-decoration: none;">🔒 Cerrar Sesión</a>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main>
+            <header>
+                <div>
+                    <h1 id="page-title">Inventario General de Activos</h1>
+                    <p style="font-size: 0.85rem; color: #64748b;">Sistema centralizado SISCOINTEC Servicios SpA</p>
+                </div>
+            </header>
+
+            <!-- TAB 1: INVENTARIO GENERAL -->
+            <div id="tab-inventario" class="tab-content active">
+                <div class="grid-cards">
+                    <div class="card">
+                        <h4>TOTAL ACTIVOS</h4>
+                        <div class="number" id="count-total">4</div>
+                    </div>
+                    <div class="card">
+                        <h4>DISPONIBLES (BODEGA)</h4>
+                        <div class="number" style="color: var(--success);" id="count-disponibles">2</div>
+                    </div>
+                    <div class="card">
+                        <h4>ASIGNADOS</h4>
+                        <div class="number" style="color: var(--accent);" id="count-asignados">1</div>
+                    </div>
+                    <div class="card">
+                        <h4>EN REPARACIÓN / RECT.</h4>
+                        <div class="number" style="color: var(--warning);" id="count-reparacion">1</div>
+                    </div>
+                </div>
+
+                <div class="section-block">
+                    <div class="section-title">
+                        <span>Listado de Equipos Tecnológicos</span>
+                        <input type="text" id="search-input" onkeyup="filterTable()" placeholder="Buscar por código o serie..." style="padding: 0.4rem; font-size: 0.85rem; width: 250px; border: 1px solid var(--border); border-radius: 4px;">
+                    </div>
+
+                    <table id="inventory-table">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Equipo</th>
+                                <th>Marca/Modelo</th>
+                                <th>N° Serie</th>
+                                <th>Ubicación</th>
+                                <th>Responsable</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-tbody">
+                            <!-- Filas dinámicas JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 2: INGRESO DE EQUIPOS -->
+            <div id="tab-ingreso" class="tab-content">
+                <div class="section-block">
+                    <div class="section-title">Registro de Nuevo Activo</div>
+                    <div class="alert-box" id="ingreso-perm-alert">
+                        Permiso activo: Registrar datos de nuevos equipos en el sistema.
+                    </div>
+                    <form id="add-asset-form" onsubmit="addAsset(event)">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Código del Activo</label>
+                                <input type="text" id="add-codigo" placeholder="Ej: NEX-005" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Tipo de Equipo</label>
+                                <select id="add-tipo" required>
+                                    <option value="Notebook">Notebook</option>
+                                    <option value="Monitor">Monitor</option>
+                                    <option value="Impresora">Impresora</option>
+                                    <option value="Teléfono">Teléfono IP</option>
+                                    <option value="Switch/Red">Equipo Red</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Marca / Modelo</label>
+                                <input type="text" id="add-marca" placeholder="Ej: Lenovo ThinkPad T14" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Número de Serie</label>
+                                <input type="text" id="add-serie" placeholder="Ej: SN-99887766" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Ubicación Inicial</label>
+                                <select id="add-ubicacion">
+                                    <option value="Bodega Central">Bodega Central</option>
+                                    <option value="Oficina Central">Oficina Central</option>
+                                    <option value="Oficina Norte">Oficina Norte</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="btn-submit-ingreso">Guardar e Ingresar a Inventario</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- TAB 3: MOVIMIENTOS -->
+            <div id="tab-movimientos" class="tab-content">
+                <div class="section-block">
+                    <div class="section-title">Reasignación y Cambio de Ubicación/Estado</div>
+                    <form id="movement-form" onsubmit="registerMovement(event)">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Seleccionar Activo</label>
+                                <select id="move-asset-select" required>
+                                    <!-- Carga dinámica -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Nuevo Estado</label>
+                                <select id="move-estado" required>
+                                    <option value="Disponible">Disponible (Bodega)</option>
+                                    <option value="Asignado">Asignado a Usuario</option>
+                                    <option value="En Reparación">En Reparación / Servicio</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Nuevo Responsable</label>
+                                <input type="text" id="move-responsable" placeholder="Ej: Juan Pérez o Bodega" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Nueva Ubicación</label>
+                                <select id="move-ubicacion">
+                                    <option value="Bodega Central">Bodega Central</option>
+                                    <option value="Oficina Central">Oficina Central</option>
+                                    <option value="Oficina Norte">Oficina Norte</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Registrar Movimiento</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- TAB 4: INFORMES Y REPORTES -->
+            <div id="tab-informes" class="tab-content">
+                <div class="section-block">
+                    <div class="section-title">Generación de Informes de Inventario (Jefatura)</div>
+                    <div class="alert-box">
+                        Herramienta ejecutiva para consolidación de inventarios y trazabilidad técnica.
+                    </div>
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                        <button class="btn btn-primary" id="btn-report-gen" onclick="generateReport('Consolidado General')">📊 Descargar Informe Consolidado</button>
+                        <button class="btn btn-warning" id="btn-report-recic" onclick="generateReport('Equipos dados de baja / Reciclaje')">♻️ Reporte de Equipos Reciclados</button>
+                    </div>
+                    <div id="report-output" style="background: #f8fafc; padding: 1rem; border: 1px dashed var(--border); font-family: monospace; font-size: 0.85rem; display: none;">
+                        <!-- Salida reporte -->
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- LOGICA JAVASCRIPT -->
+    <script>
+        // ESTADO DE DATOS MOCKUP
+        let currentUser = { role: '', name: '' };
+
+        let assets = [
+            { codigo: 'NEX-001', tipo: 'Notebook', marca: 'Dell Latitude 3420', serie: 'SN-445511', ubicacion: 'Oficina Central', responsable: 'Carlos Soto', estado: 'Asignado' },
+            { codigo: 'NEX-002', tipo: 'Monitor', marca: 'LG 24 pulgadas', serie: 'SN-882211', ubicacion: 'Bodega Central', responsable: 'Sin asignar', estado: 'Disponible' },
+            { codigo: 'NEX-003', tipo: 'Impresora', marca: 'HP LaserJet Pro', serie: 'SN-112233', ubicacion: 'Oficina Norte', responsable: 'Soporte TI', estado: 'En Reparación' },
+            { codigo: 'NEX-004', tipo: 'Switch/Red', marca: 'Cisco 24p', serie: 'SN-990011', ubicacion: 'Bodega Central', responsable: 'Sin asignar', estado: 'Disponible' }
+        ];
+
+        // GESTIÓN DE SESIÓN
+        function login(role, name) {
+            currentUser = { role, name };
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('user-name-display').innerText = name;
+            document.getElementById('user-role-display').innerText = role.toUpperCase();
+            
+            applyRolePermissions();
+            renderTable();
+            populateMoveSelect();
+        }
+
+        // CONTROL DE PERMISOS SEGÚN ROL
+        function applyRolePermissions() {
+            const role = currentUser.role;
+
+            // Deshabilitar botón de informes a roles no autorizados
+            const reportBtn = document.getElementById('btn-report-gen');
+            const reportRecicBtn = document.getElementById('btn-report-recic');
+            
+            if (role === 'bodeguero') {
+                reportBtn.disabled = true;
+                reportRecicBtn.disabled = true;
+            } else {
+                reportBtn.disabled = false;
+                reportRecicBtn.disabled = false;
+            }
+        }
+
+        // NAVEGACIÓN PESTAÑAS
+        function showTab(tabId, element) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-links a').forEach(link => link.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            element.classList.add('active');
+
+            // Actualizar título
+            const titles = {
+                'tab-inventario': 'Inventario General de Activos',
+                'tab-ingreso': 'Ingreso de Nuevos Equipos',
+                'tab-movimientos': 'Gestión de Movimientos y Asignaciones',
+                'tab-informes': 'Generación de Reportes e Informes'
+            };
+            document.getElementById('page-title').innerText = titles[tabId];
+        }
+
+        // RENDERIZAR TABLA DE INVENTARIO
+        function renderTable() {
+            const tbody = document.getElementById('inventory-tbody');
+            tbody.innerHTML = '';
+
+            let countDispo = 0, countAsig = 0, countRep = 0;
+
+            assets.forEach((item, index) => {
+                if (item.estado === 'Disponible') countDispo++;
+                if (item.estado === 'Asignado') countAsig++;
+                if (item.estado === 'En Reparación') countRep++;
+
+                let statusClass = 'disponible';
+                if (item.estado === 'Asignado') statusClass = 'asignado';
+                if (item.estado === 'En Reparación') statusClass = 'reparacion';
+                if (item.estado === 'Dado de Baja / Reciclado') statusClass = 'reciclado';
+
+                // Botones dinámicos según permisos del rol
+                let actionsHtml = '';
+
+                // Botón Enviar a Reciclaje (Permitido para Técnico Informático y Jefatura)
+                if (currentUser.role === 'tecnico' || currentUser.role === 'jefatura') {
+                    actionsHtml += `<button class="btn btn-warning action-btn" onclick="recycleAsset(${index})">♻️ Reciclar</button>`;
+                }
+
+                // Botón Eliminar Físicamente (Solo permitido para Jefatura)
+                if (currentUser.role === 'jefatura') {
+                    actionsHtml += `<button class="btn btn-danger action-btn" onclick="deleteAsset(${index})">🗑️ Eliminar</button>`;
+                }
+
+                if (actionsHtml === '') actionsHtml = '<small style="color:#94a3b8">Sin acciones</small>';
+
+                const row = `
+                    <tr>
+                        <td><strong>${item.codigo}</strong></td>
+                        <td>${item.tipo}</td>
+                        <td>${item.marca}</td>
+                        <td>${item.serie}</td>
+                        <td>${item.ubicacion}</td>
+                        <td>${item.responsable}</td>
+                        <td><span class="status ${statusClass}">${item.estado}</span></td>
+                        <td>${actionsHtml}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+
+            // Actualizar contadores
+            document.getElementById('count-total').innerText = assets.length;
+            document.getElementById('count-disponibles').innerText = countDispo;
+            document.getElementById('count-asignados').innerText = countAsig;
+            document.getElementById('count-reparacion').innerText = countRep;
+        }
+
+        // REGISTRAR NUEVO ACTIVO
+        function addAsset(event) {
+            event.preventDefault();
+            const newAsset = {
+                codigo: document.getElementById('add-codigo').value,
+                tipo: document.getElementById('add-tipo').value,
+                marca: document.getElementById('add-marca').value,
+                serie: document.getElementById('add-serie').value,
+                ubicacion: document.getElementById('add-ubicacion').value,
+                responsable: 'Sin asignar',
+                estado: 'Disponible'
+            };
+
+            assets.push(newAsset);
+            renderTable();
+            populateMoveSelect();
+            document.getElementById('add-asset-form').reset();
+            alert(`Equipo ${newAsset.codigo} ingresado correctamente al inventario.`);
+            showTab('tab-inventario', document.querySelectorAll('.nav-links a')[0]);
+        }
+
+        // LLENAR SELECT DE MOVIMIENTOS
+        function populateMoveSelect() {
+            const select = document.getElementById('move-asset-select');
+            select.innerHTML = '';
+            assets.forEach((item, index) => {
+                select.innerHTML += `<option value="${index}">${item.codigo} - ${item.marca} (${item.estado})</option>`;
+            });
+        }
+
+        // REGISTRAR MOVIMIENTO
+        function registerMovement(event) {
+            event.preventDefault();
+            const index = document.getElementById('move-asset-select').value;
+            assets[index].estado = document.getElementById('move-estado').value;
+            assets[index].responsable = document.getElementById('move-responsable').value;
+            assets[index].ubicacion = document.getElementById('move-ubicacion').value;
+
+            renderTable();
+            alert('Movimiento registrado correctamente.');
+            showTab('tab-inventario', document.querySelectorAll('.nav-links a')[0]);
+        }
+
+        // RECICLAR / DAR DE BAJA
+        function recycleAsset(index) {
+            if (confirm(`¿Confirmas enviar a RECICLAJE / DAR DE BAJA el activo ${assets[index].codigo}?`)) {
+                assets[index].estado = 'Dado de Baja / Reciclado';
+                assets[index].ubicacion = 'Bodega de Desecho / Reciclaje';
+                assets[index].responsable = 'N/A';
+                renderTable();
+                populateMoveSelect();
+            }
+        }
+
+        // ELIMINAR REGISTRO (SOLO JEFATURA)
+        function deleteAsset(index) {
+            if (confirm(`[JEFATURA] ¿Está seguro de ELIMINAR DEFINITIVAMENTE el activo ${assets[index].codigo}? Esta acción no se puede deshacer.`)) {
+                assets.splice(index, 1);
+                renderTable();
+                populateMoveSelect();
+            }
+        }
+
+        // FILTRADO EN TABLA
+        function filterTable() {
+            const input = document.getElementById('search-input').value.toUpperCase();
+            const rows = document.getElementById('inventory-tbody').getElementsByTagName('tr');
+
+            for (let i = 0; i < rows.length; i++) {
+                const text = rows[i].innerText.toUpperCase();
+                rows[i].style.display = text.indexOf(input) > -1 ? '' : 'none';
+            }
+        }
+
+        // GENERAR INFORMES
+        function generateReport(title) {
+            const output = document.getElementById('report-output');
+            output.style.display = 'block';
+            
+            const date = new Date().toLocaleString();
+            let reportText = `=========================================================\n`;
+            reportText += `INFORME EJECUTIVO: ${title.toUpperCase()}\n`;
+            reportText += `FECHA DE EMISIÓN: ${date}\n`;
+            reportText += `GENERADO POR: ${currentUser.name} (${currentUser.role.toUpperCase()})\n`;
+            reportText += `=========================================================\n\n`;
+            
+            assets.forEach(a => {
+                reportText += `[${a.codigo}] ${a.tipo} - ${a.marca} | Serie: ${a.serie} | Ubic: ${a.ubicacion} | Estado: ${a.estado}\n`;
+            });
+
+            reportText += `\n--- FIN DEL INFORME - SISCOINTEC SERVICIOS SPA ---`;
+            output.innerText = reportText;
+        }
+    </script>
+</body>
+</html>
