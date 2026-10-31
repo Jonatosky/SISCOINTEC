@@ -1,717 +1,729 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISCOINTEC - Mockup de Trazabilidad de Activos</title>
-    <!-- CSS / Estilos integrados -->
-    <style>
-        :root {
-            --primary: #1e293b;
-            --accent: #2563eb;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text: #334155;
-            --border: #e2e8f0;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --success: #10b981;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Siscointec - Control de Inventarios Tecnológicos</title>
+  <style>
+    :root {
+      --primary: #0f172a;
+      --primary-light: #1e293b;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --success: #10b981;
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
 
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
+    /* OVERLAY DE LOGIN MODERNO */
+    #login-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      display: flex; justify-content: center; align-items: center; z-index: 1000;
+    }
+    .login-card {
+      background: var(--card-bg); padding: 2.5rem; border-radius: 16px;
+      box-shadow: var(--shadow-lg); width: 420px; text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .login-card h2 { margin-bottom: 0.5rem; color: var(--primary); font-size: 1.75rem; font-weight: 700; }
+    .login-card p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+    
+    .form-group-login { text-align: left; margin-bottom: 1.25rem; }
+    .form-group-login label { font-size: 0.85rem; font-weight: 600; color: var(--text); display: block; margin-bottom: 0.4rem; }
+    .form-group-login input {
+      width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 8px;
+      font-size: 0.95rem; transition: all 0.2s; outline: none; background: #f8fafc;
+    }
+    .form-group-login input:focus { border-color: var(--accent); background: white; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
+    
+    .btn-login {
+      width: 100%; padding: 0.75rem; background: var(--accent); color: white; border: none;
+      border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; margin-top: 0.5rem; transition: background 0.2s;
+    }
+    .btn-login:hover { background: var(--accent-hover); }
+    
+    .credentials-box {
+      background: #f1f5f9; padding: 1rem; border-radius: 8px; margin-top: 1.5rem;
+      font-size: 0.8rem; text-align: left; color: var(--text-muted); border: 1px solid var(--border);
+    }
+    .credentials-box ul { padding-left: 1.2rem; margin-top: 0.4rem; }
+    .credentials-box code { background: #e2e8f0; padding: 0.1rem 0.3rem; border-radius: 4px; color: var(--primary); font-weight: 600; }
 
-        /* LOGIN OVERLAY */
-        #login-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.9);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
+    /* LAYOUT PRINCIPAL */
+    #app { display: none; width: 100%; height: 100%; }
+    aside { width: 280px; background: var(--primary); color: white; display: flex; flex-direction: column; box-shadow: 4px 0 10px rgba(0,0,0,0.05); }
+    .brand { padding: 1.5rem; font-size: 1.35rem; font-weight: 700; border-bottom: 1px solid #1e293b; display: flex; align-items: center; gap: 0.5rem; color: #f8fafc; }
+    
+    .nav-links { list-style: none; padding: 1rem 0; flex-grow: 1; }
+    .nav-links li a {
+      display: flex; align-items: center; gap: 0.75rem; padding: 0.9rem 1.5rem;
+      color: #94a3b8; text-decoration: none; font-size: 0.95rem; font-weight: 500; transition: all 0.2s;
+    }
+    .nav-links li a:hover, .nav-links li a.active { color: white; background: var(--primary-light); border-left: 4px solid var(--accent); }
+    
+    .user-info { padding: 1.25rem 1.5rem; border-top: 1px solid #1e293b; background: #090d16; }
+    .user-info .role-badge {
+      display: inline-block; padding: 0.25rem 0.6rem; background: rgba(59, 130, 246, 0.2);
+      color: #93c5fd; font-size: 0.75rem; font-weight: 600; border-radius: 6px; margin-top: 0.4rem; border: 1px solid rgba(59, 130, 246, 0.3);
+    }
 
-        .login-card {
-            background: white;
-            padding: 2.5rem;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            width: 400px;
-            text-align: center;
-        }
+    main { flex-grow: 1; padding: 2.5rem; overflow-y: auto; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; }
+    header h1 { font-size: 1.75rem; font-weight: 700; color: var(--primary); }
 
-        .login-card h2 {
-            margin-bottom: 0.5rem;
-            color: var(--primary);
-        }
+    /* TARJETAS KPI MODERNAS */
+    .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1.25rem; margin-bottom: 2rem; }
+    .card {
+      background: var(--card-bg); padding: 1.5rem; border-radius: 12px;
+      box-shadow: var(--shadow); border: 1px solid var(--border); transition: transform 0.2s;
+    }
+    .card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+    .card h4 { color: var(--text-muted); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+    .card .number { font-size: 2rem; font-weight: 700; color: var(--primary); }
 
-        .login-card p {
-            font-size: 0.9rem;
-            color: #64748b;
-            margin-bottom: 1.5rem;
-        }
+    .section-block {
+      background: var(--card-bg); padding: 1.75rem; border-radius: 12px;
+      box-shadow: var(--shadow); border: 1px solid var(--border); margin-bottom: 2rem;
+    }
+    .section-title {
+      font-size: 1.15rem; font-weight: 700; margin-bottom: 1.25rem; color: var(--primary);
+      display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;
+    }
 
-        .role-btn {
-            display: block;
-            width: 100%;
-            padding: 0.75rem;
-            margin-bottom: 0.75rem;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            background: #f1f5f9;
-            color: var(--primary);
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-align: left;
-        }
+    /* TABLAS MODERNAS */
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
+    th, td { padding: 1rem; border-bottom: 1px solid var(--border); }
+    th { background: #f8fafc; color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; }
+    tr:hover td { background: #f8fafc; }
 
-        .role-btn:hover {
-            background: var(--accent);
-            color: white;
-            border-color: var(--accent);
-        }
+    /* BADGES DE ESTADO ESTILIZADOS */
+    .status { padding: 0.3rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display: inline-block; text-transform: uppercase; letter-spacing: 0.03em; }
+    .status.registrado { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+    .status.custodia { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .status.borrado { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+    .status.disposicion { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
 
-        .role-btn small {
-            display: block;
-            font-weight: normal;
-            font-size: 0.75rem;
-            opacity: 0.8;
-        }
+    /* FORMULARIOS MODERNOS */
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem; }
+    .form-group { display: flex; flex-direction: column; }
+    .form-group label { font-size: 0.85rem; margin-bottom: 0.4rem; font-weight: 600; color: var(--text); }
+    .form-group input, .form-group select {
+      padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; background: #f8fafc; outline: none; transition: all 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus { border-color: var(--accent); background: white; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15); }
 
-        /* LAYOUT PRINCIPAL */
-        #app {
-            display: flex;
-            width: 100%;
-            height: 100%;
-        }
+    .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-success { background: var(--success); color: white; }
+    .btn-success:hover { background: #059669; }
+    .btn-warning { background: var(--warning); color: white; }
+    .btn-warning:hover { background: #d97706; }
 
-        /* SIDEBAR */
-        aside {
-            width: 260px;
-            background: var(--primary);
-            color: white;
-            display: flex;
-            flex-direction: column;
-        }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-        .brand {
-            padding: 1.5rem;
-            font-size: 1.25rem;
-            font-weight: bold;
-            border-bottom: 1px solid #334155;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .nav-links {
-            list-style: none;
-            padding: 1rem 0;
-            flex-grow: 1;
-        }
-
-        .nav-links li a {
-            display: block;
-            padding: 0.8rem 1.5rem;
-            color: #94a3b8;
-            text-decoration: none;
-            font-size: 0.95rem;
-            transition: 0.2s;
-        }
-
-        .nav-links li a:hover, .nav-links li a.active {
-            color: white;
-            background: #334155;
-            border-left: 4px solid var(--accent);
-        }
-
-        .user-info {
-            padding: 1rem 1.5rem;
-            border-top: 1px solid #334155;
-            background: #0f172a;
-        }
-
-        .user-info .role-badge {
-            display: inline-block;
-            padding: 0.2rem 0.5rem;
-            background: var(--accent);
-            font-size: 0.75rem;
-            border-radius: 4px;
-            margin-top: 0.3rem;
-        }
-
-        /* CONTENIDO PRINCIPAL */
-        main {
-            flex-grow: 1;
-            padding: 2rem;
-            overflow-y: auto;
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-
-        /* TABLAS Y CARDS */
-        .grid-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .card {
-            background: var(--card-bg);
-            padding: 1.25rem;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-        }
-
-        .card h4 {
-            color: #64748b;
-            font-size: 0.85rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .card .number {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: var(--primary);
-        }
-
-        .section-block {
-            background: var(--card-bg);
-            padding: 1.5rem;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            margin-bottom: 2rem;
-        }
-
-        .section-title {
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
-            color: var(--primary);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        /* TABLA DE INVENTARIO */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            font-size: 0.9rem;
-        }
-
-        th, td {
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid var(--border);
-        }
-
-        th {
-            background: #f1f5f9;
-            color: #475569;
-        }
-
-        .status {
-            padding: 0.25rem 0.5rem;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .status.disponible { background: #d1fae5; color: #065f46; }
-        .status.asignado { background: #dbeafe; color: #1e40af; }
-        .status.reparacion { background: #fef3c7; color: #92400e; }
-        .status.reciclado { background: #fee2e2; color: #991b1b; }
-
-        /* FORMULARIO */
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group label {
-            font-size: 0.8rem;
-            margin-bottom: 0.3rem;
-            font-weight: 600;
-        }
-
-        .form-group input, .form-group select {
-            padding: 0.6rem;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-        }
-
-        .btn {
-            padding: 0.6rem 1.2rem;
-            border: none;
-            border-radius: 4px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .btn-primary { background: var(--accent); color: white; }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-warning { background: var(--warning); color: white; }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .action-btn {
-            padding: 0.3rem 0.6rem;
-            font-size: 0.75rem;
-            margin-right: 0.3rem;
-        }
-
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        .alert-box {
-            padding: 0.75rem;
-            background: #eff6ff;
-            border-left: 4px solid var(--accent);
-            margin-bottom: 1rem;
-            font-size: 0.85rem;
-        }
-    </style>
+    .alert-box {
+      padding: 1rem; background: #eff6ff; border-left: 4px solid var(--accent);
+      border-radius: 0 8px 8px 0; margin-bottom: 1.5rem; font-size: 0.9rem; color: #1e40af;
+    }
+  </style>
 </head>
 <body>
 
-    <!-- OVERLAY DE LOGIN / SELECCIÓN DE ROL -->
-    <div id="login-overlay">
-        <div class="login-card">
-            <h2>SISCOINTEC</h2>
-            <p>Selecciona un rol para simular el inicio de sesión:</p>
-            
-            <button class="role-btn" onclick="login('bodeguero', 'Juan Pérez (Bodega)')">
-                📦 Bodeguero
-                <small>Permisos: Registro de activos, recepción y movimientos de stock.</small>
-            </button>
-
-            <button class="role-btn" onclick="login('tecnico', 'Carlos Soto (Soporte TI)')">
-                💻 Técnico Informático
-                <small>Permisos: Mantenimiento, reasignación y baja/reciclaje de equipos.</small>
-            </button>
-
-            <button class="role-btn" onclick="login('jefatura', 'María González (Gerencia Operaciones)')">
-                📊 Jefatura / Revisión
-                <small>Permisos: Auditoría global, eliminación directa e informes ejecutivos.</small>
-            </button>
+  <!-- LOGIN DE SISCOINTEC -->
+  <div id="login-overlay">
+    <div class="login-card">
+      <h2>📦 Siscointec</h2>
+      <p>Sistema de Control de Inventarios Tecnológicos</p>
+      
+      <form onsubmit="handleLogin(event)">
+        <div class="form-group-login">
+          <label>Usuario:</label>
+          <input type="text" id="login-user" placeholder="Ej: bodega, tecnico o jefatura" required>
         </div>
+        <div class="form-group-login">
+          <label>Contraseña:</label>
+          <input type="password" id="login-pass" placeholder="••••" required>
+        </div>
+        <button type="submit" class="btn-login">Ingresar al Sistema</button>
+      </form>
+
+      <div class="credentials-box">
+        <strong>🔑 Credenciales de Prueba:</strong>
+        <ul>
+          <li><strong>Bodega:</strong> <code>bodega</code> / <code>1234</code></li>
+          <li><strong>Técnico:</strong> <code>tecnico</code> / <code>1234</code></li>
+          <li><strong>Jefatura:</strong> <code>jefatura</code> / <code>1234</code></li>
+        </ul>
+      </div>
     </div>
+  </div>
 
-    <!-- MAIN APP STRUCTURE -->
-    <div id="app">
-        <!-- SIDEBAR -->
-        <aside>
-            <div class="brand">📦 SISCOINTEC</div>
-            <ul class="nav-links">
-                <li><a href="#" class="active" onclick="showTab('tab-inventario', this)">📋 Inventario General</a></li>
-                <li><a href="#" onclick="showTab('tab-ingreso', this)">➕ Ingreso de Equipos</a></li>
-                <li><a href="#" onclick="showTab('tab-movimientos', this)">🔄 Movimientos</a></li>
-                <li><a href="#" onclick="showTab('tab-informes', this)">📊 Informes y Reportes</a></li>
-            </ul>
-            <div class="user-info">
-                <div id="user-name-display" style="font-size: 0.9rem; font-weight: bold;">Usuario</div>
-                <div class="role-badge" id="user-role-display">Rol</div>
-                <br><br>
-                <a href="#" onclick="location.reload()" style="color: #ef4444; font-size: 0.8rem; text-decoration: none;">🔒 Cerrar Sesión</a>
+  <!-- APLICACIÓN PRINCIPAL -->
+  <div id="app">
+    <aside>
+      <div class="brand">📦 Siscointec <span style="font-size: 0.7rem; background: var(--accent); padding: 0.1rem 0.4rem; border-radius: 4px;">Pro</span></div>
+      <ul class="nav-links" id="sidebar-nav"></ul>
+      <div class="user-info">
+        <div id="user-name-display" style="font-weight: 600; font-size: 0.95rem;">Usuario</div>
+        <div class="role-badge" id="user-role-display">Rol</div>
+        <br><br>
+        <a href="#" onclick="location.reload()" style="color: #f87171; font-size: 0.8rem; text-decoration: none; font-weight: 600;">🔒 Cerrar Sesión</a>
+      </div>
+    </aside>
+
+    <main>
+      <header>
+        <div>
+          <h1 id="page-title">Control de Inventarios y Trazabilidad</h1>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">NexoTech Servicios SpA — Plataforma de Gestión TI</p>
+        </div>
+      </header>
+
+      <!-- TAB 1: INVENTARIO GENERAL -->
+      <div id="tab-inventario" class="tab-content active">
+        <div class="grid-cards">
+          <div class="card">
+            <h4>Total de Activos</h4>
+            <div class="number" id="count-total">0</div>
+          </div>
+          <div class="card">
+            <h4>1. Registrados</h4>
+            <div class="number" style="color: #0369a1;" id="count-registrados">0</div>
+          </div>
+          <div class="card">
+            <h4>2. En Custodia</h4>
+            <div class="number" style="color: #d97706;" id="count-custodia">0</div>
+          </div>
+          <div class="card">
+            <h4>3. Borrado Seguro</h4>
+            <div class="number" style="color: var(--accent);" id="count-borrado">0</div>
+          </div>
+          <div class="card">
+            <h4>4. Disposición Final</h4>
+            <div class="number" style="color: var(--success);" id="count-disposicion">0</div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-title">
+            <span>Listado General de Activos Tecnológicos (MySQL)</span>
+            <input type="text" id="search-input" onkeyup="filterTable()" placeholder="Buscar por código, serie o RUT..." style="padding: 0.5rem 0.75rem; font-size: 0.85rem; width: 260px; border: 1px solid var(--border); border-radius: 8px; outline: none;">
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Equipo / Modelo</th>
+                <th>N° Serie</th>
+                <th>RUT Responsable</th>
+                <th>Motivo Baja</th>
+                <th>Estado Actual (RF-02)</th>
+                <th>Certificado (RF-05)</th>
+              </tr>
+            </thead>
+            <tbody id="inventory-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 2: REGISTRO DE BAJA (RF-01) -->
+      <div id="tab-ingreso" class="tab-content">
+        <div class="section-block">
+          <div class="section-title">Ingreso Obligatorio de Activo Obsoleto (RF-01)</div>
+          <div class="alert-box">⚠️ <strong>Requerimiento RF-01:</strong> Todos los campos con asterisco (*) son obligatorios para garantizar la trazabilidad unívoca.</div>
+          <form id="add-asset-form" onsubmit="addAsset(event)">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Código Interno Activo (*)</label>
+                <input type="text" id="add-codigo" placeholder="Ej: OBS-2026-001" required>
+              </div>
+              <div class="form-group">
+                <label>Número de Serie (*)</label>
+                <input type="text" id="add-serie" placeholder="Ej: SN-99887766X" required>
+              </div>
+              <div class="form-group">
+                <label>Marca / Modelo (*)</label>
+                <input type="text" id="add-marca" placeholder="Ej: HP ProBook 450 G7" required>
+              </div>
+              <div class="form-group">
+                <label>RUT Responsable (*)</label>
+                <input type="text" id="add-rut" placeholder="Ej: 18.765.432-1" required>
+              </div>
+              <div class="form-group">
+                <label>Tipo de Equipo (*)</label>
+                <select id="add-tipo" required>
+                  <option value="Notebook">Notebook</option>
+                  <option value="PC Escritorio">PC Escritorio</option>
+                  <option value="Servidor">Servidor</option>
+                  <option value="Disco Duro / SSD">Disco Duro / SSD</option>
+                  <option value="Impresora / Periférico">Impresora / Periférico</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Motivo de la Baja (*)</label>
+                <select id="add-motivo" required>
+                  <option value="Falla Hardware Irreparable">Falla Hardware Irreparable</option>
+                  <option value="Obsolescencia Tecnológica">Obsolescencia Tecnológica</option>
+                  <option value="Daño Físico / Accidente">Daño Físico / Accidente</option>
+                  <option value="Baja Preventiva Ley REP">Baja Preventiva Ley REP</option>
+                </select>
+              </div>
             </div>
-        </aside>
+            <button type="submit" class="btn btn-primary">Registrar Baja en MySQL</button>
+          </form>
+        </div>
+      </div>
 
-        <!-- MAIN CONTENT -->
-        <main>
-            <header>
-                <div>
-                    <h1 id="page-title">Inventario General de Activos</h1>
-                    <p style="font-size: 0.85rem; color: #64748b;">Sistema centralizado SISCOINTEC Servicios SpA</p>
-                </div>
-            </header>
-
-            <!-- TAB 1: INVENTARIO GENERAL -->
-            <div id="tab-inventario" class="tab-content active">
-                <div class="grid-cards">
-                    <div class="card">
-                        <h4>TOTAL ACTIVOS</h4>
-                        <div class="number" id="count-total">4</div>
-                    </div>
-                    <div class="card">
-                        <h4>DISPONIBLES (BODEGA)</h4>
-                        <div class="number" style="color: var(--success);" id="count-disponibles">2</div>
-                    </div>
-                    <div class="card">
-                        <h4>ASIGNADOS</h4>
-                        <div class="number" style="color: var(--accent);" id="count-asignados">1</div>
-                    </div>
-                    <div class="card">
-                        <h4>EN REPARACIÓN / RECT.</h4>
-                        <div class="number" style="color: var(--warning);" id="count-reparacion">1</div>
-                    </div>
-                </div>
-
-                <div class="section-block">
-                    <div class="section-title">
-                        <span>Listado de Equipos Tecnológicos</span>
-                        <input type="text" id="search-input" onkeyup="filterTable()" placeholder="Buscar por código o serie..." style="padding: 0.4rem; font-size: 0.85rem; width: 250px; border: 1px solid var(--border); border-radius: 4px;">
-                    </div>
-
-                    <table id="inventory-table">
-                        <thead>
-                            <tr>
-                                <th>Código</th>
-                                <th>Equipo</th>
-                                <th>Marca/Modelo</th>
-                                <th>N° Serie</th>
-                                <th>Ubicación</th>
-                                <th>Responsable</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="inventory-tbody">
-                            <!-- Filas dinámicas JS -->
-                        </tbody>
-                    </table>
-                </div>
+      <!-- TAB 3: TRANSICIONES DE ESTADO (RF-02) -->
+      <div id="tab-transiciones" class="tab-content">
+        <div class="section-block">
+          <div class="section-title">Control Estricto de Transición de Estados (RF-02)</div>
+          <div class="alert-box">🛡️ <strong>Ciclo obligatorio:</strong> <code>Registrado ➔ En Custodia ➔ Con Borrado Seguro ➔ Disposición Final</code></div>
+          <form id="transition-form" onsubmit="processTransition(event)">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Seleccionar Activo</label>
+                <select id="trans-asset-select" onchange="updateTransitionOptions()" required></select>
+              </div>
+              <div class="form-group">
+                <label>Siguiente Estado Permitido</label>
+                <select id="trans-next-state" required></select>
+              </div>
+              <div class="form-group">
+                <label>Ubicación / Detalle de Transición</label>
+                <input type="text" id="trans-ubicacion" placeholder="Ej: Bodega A-2 / Estante 3" required>
+              </div>
+              <div class="form-group" id="group-cert-file" style="display: none;">
+                <label>Nombre / Certificado PDF de Reciclaje (RF-05)</label>
+                <input type="text" id="trans-cert" placeholder="Ej: CERT-RECICLAJE-9982.pdf">
+              </div>
             </div>
+            <button type="submit" class="btn btn-success">Avanzar Estado en MySQL</button>
+          </form>
+        </div>
+      </div>
 
-            <!-- TAB 2: INGRESO DE EQUIPOS -->
-            <div id="tab-ingreso" class="tab-content">
-                <div class="section-block">
-                    <div class="section-title">Registro de Nuevo Activo</div>
-                    <div class="alert-box" id="ingreso-perm-alert">
-                        Permiso activo: Registrar datos de nuevos equipos en el sistema.
-                    </div>
-                    <form id="add-asset-form" onsubmit="addAsset(event)">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label>Código del Activo</label>
-                                <input type="text" id="add-codigo" placeholder="Ej: NEX-005" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Tipo de Equipo</label>
-                                <select id="add-tipo" required>
-                                    <option value="Notebook">Notebook</option>
-                                    <option value="Monitor">Monitor</option>
-                                    <option value="Impresora">Impresora</option>
-                                    <option value="Teléfono">Teléfono IP</option>
-                                    <option value="Switch/Red">Equipo Red</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Marca / Modelo</label>
-                                <input type="text" id="add-marca" placeholder="Ej: Lenovo ThinkPad T14" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Número de Serie</label>
-                                <input type="text" id="add-serie" placeholder="Ej: SN-99887766" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Ubicación Inicial</label>
-                                <select id="add-ubicacion">
-                                    <option value="Bodega Central">Bodega Central</option>
-                                    <option value="Oficina Central">Oficina Central</option>
-                                    <option value="Oficina Norte">Oficina Norte</option>
-                                </select>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary" id="btn-submit-ingreso">Guardar e Ingresar a Inventario</button>
-                    </form>
-                </div>
-            </div>
+      <!-- TAB 4: BITÁCORA AUTOMÁTICA (RF-04) -->
+      <div id="tab-bitacora" class="tab-content">
+        <div class="section-block">
+          <div class="section-title">Bitácora Automática de Movimientos (RF-04)</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha y Hora</th>
+                <th>Código Activo</th>
+                <th>Estado Anterior</th>
+                <th>Nuevo Estado</th>
+                <th>Usuario Responsable</th>
+                <th>Ubicación / Detalle</th>
+              </tr>
+            </thead>
+            <tbody id="movements-tbody"></tbody>
+          </table>
+        </div>
+      </div>
 
-            <!-- TAB 3: MOVIMIENTOS -->
-            <div id="tab-movimientos" class="tab-content">
-                <div class="section-block">
-                    <div class="section-title">Reasignación y Cambio de Ubicación/Estado</div>
-                    <form id="movement-form" onsubmit="registerMovement(event)">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label>Seleccionar Activo</label>
-                                <select id="move-asset-select" required>
-                                    <!-- Carga dinámica -->
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Nuevo Estado</label>
-                                <select id="move-estado" required>
-                                    <option value="Disponible">Disponible (Bodega)</option>
-                                    <option value="Asignado">Asignado a Usuario</option>
-                                    <option value="En Reparación">En Reparación / Servicio</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Nuevo Responsable</label>
-                                <input type="text" id="move-responsable" placeholder="Ej: Juan Pérez o Bodega" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Nueva Ubicación</label>
-                                <select id="move-ubicacion">
-                                    <option value="Bodega Central">Bodega Central</option>
-                                    <option value="Oficina Central">Oficina Central</option>
-                                    <option value="Oficina Norte">Oficina Norte</option>
-                                </select>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Registrar Movimiento</button>
-                    </form>
-                </div>
-            </div>
+      <!-- TAB 5: REPORTES Y DESCARGAS (RNF-02) -->
+      <div id="tab-informes" class="tab-content">
+        <div class="section-block">
+          <div class="section-title">Generación y Descarga de Reportes (RNF-02)</div>
+          <div class="alert-box">📄 Descargue registros consolidados para auditoría externa en formatos estándar (CSV o PDF).</div>
+          <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+            <button class="btn btn-primary" onclick="downloadCSV()">📥 Descargar Archivo Real (.CSV)</button>
+            <button class="btn btn-warning" onclick="downloadPDF()">📑 Generar / Guardar Archivo Real (.PDF)</button>
+          </div>
+        </div>
+      </div>
 
-            <!-- TAB 4: INFORMES Y REPORTES -->
-            <div id="tab-informes" class="tab-content">
-                <div class="section-block">
-                    <div class="section-title">Generación de Informes de Inventario (Jefatura)</div>
-                    <div class="alert-box">
-                        Herramienta ejecutiva para consolidación de inventarios y trazabilidad técnica.
-                    </div>
-                    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
-                        <button class="btn btn-primary" id="btn-report-gen" onclick="generateReport('Consolidado General')">📊 Descargar Informe Consolidado</button>
-                        <button class="btn btn-warning" id="btn-report-recic" onclick="generateReport('Equipos dados de baja / Reciclaje')">♻️ Reporte de Equipos Reciclados</button>
-                    </div>
-                    <div id="report-output" style="background: #f8fafc; padding: 1rem; border: 1px dashed var(--border); font-family: monospace; font-size: 0.85rem; display: none;">
-                        <!-- Salida reporte -->
-                    </div>
-                </div>
-            </div>
+    </main>
+  </div>
 
-        </main>
-    </div>
+  <script>
+    const USERS = {
+      bodega: { pass: '1234', name: 'Juan Pérez', role: 'Encargado de Bodega', code: 'bodega' },
+      tecnico: { pass: '1234', name: 'Carlos Soto', role: 'Técnico de Soporte TI', code: 'tecnico' },
+      jefatura: { pass: '1234', name: 'María González', role: 'Auditora / Gerencia', code: 'jefatura' }
+    };
 
-    <!-- LOGICA JAVASCRIPT -->
-    <script>
-        // ESTADO DE DATOS MOCKUP
-        let currentUser = { role: '', name: '' };
+    let currentUser = null;
+    let assets = [];
+    let bitacora = [];
 
-        let assets = [
-            { codigo: 'NEX-001', tipo: 'Notebook', marca: 'Dell Latitude 3420', serie: 'SN-445511', ubicacion: 'Oficina Central', responsable: 'Carlos Soto', estado: 'Asignado' },
-            { codigo: 'NEX-002', tipo: 'Monitor', marca: 'LG 24 pulgadas', serie: 'SN-882211', ubicacion: 'Bodega Central', responsable: 'Sin asignar', estado: 'Disponible' },
-            { codigo: 'NEX-003', tipo: 'Impresora', marca: 'HP LaserJet Pro', serie: 'SN-112233', ubicacion: 'Oficina Norte', responsable: 'Soporte TI', estado: 'En Reparación' },
-            { codigo: 'NEX-004', tipo: 'Switch/Red', marca: 'Cisco 24p', serie: 'SN-990011', ubicacion: 'Bodega Central', responsable: 'Sin asignar', estado: 'Disponible' }
+    const STATE_FLOW = {
+      'Registrado': 'En Custodia',
+      'En Custodia': 'Con Borrado Seguro',
+      'Con Borrado Seguro': 'Disposición Final'
+    };
+
+    async function loadDataFromDatabase() {
+      try {
+        const response = await fetch('api/activos.php');
+        const data = await response.json();
+        
+        if (data.activos) assets = data.activos;
+        if (data.bitacora) bitacora = data.bitacora;
+        
+        renderAll();
+      } catch (error) {
+        console.error('Error al conectar con la API PHP/MySQL:', error);
+      }
+    }
+
+    function handleLogin(event) {
+      event.preventDefault();
+      const userInput = document.getElementById('login-user').value.trim().toLowerCase();
+      const passInput = document.getElementById('login-pass').value.trim();
+
+      if (USERS[userInput] && USERS[userInput].pass === passInput) {
+        currentUser = USERS[userInput];
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('app').style.display = 'flex';
+        
+        document.getElementById('user-name-display').innerText = currentUser.name;
+        document.getElementById('user-role-display').innerText = currentUser.role;
+
+        buildMenu();
+        loadDataFromDatabase();
+      } else {
+        alert('❌ Credenciales incorrectas. Intenta con: bodega, tecnico o jefatura (clave: 1234)');
+      }
+    }
+
+    function buildMenu() {
+      const nav = document.getElementById('sidebar-nav');
+      nav.innerHTML = '';
+
+      let menuItems = [
+        { id: 'tab-inventario', text: '📋 Activos y Trazabilidad', active: true }
+      ];
+
+      if (currentUser.code === 'bodega') {
+        menuItems.push({ id: 'tab-ingreso', text: '➕ Registro de Baja (RF-01)' });
+        menuItems.push({ id: 'tab-transiciones', text: '🔄 Flujo de Estados (RF-02)' });
+        menuItems.push({ id: 'tab-bitacora', text: '📜 Bitácora (RF-04)' });
+      } else if (currentUser.code === 'tecnico') {
+        menuItems.push({ id: 'tab-transiciones', text: '🔄 Flujo de Estados (RF-02)' });
+        menuItems.push({ id: 'tab-bitacora', text: '📜 Bitácora (RF-04)' });
+      } else if (currentUser.code === 'jefatura') {
+        menuItems.push({ id: 'tab-bitacora', text: '📜 Bitácora (RF-04)' });
+        menuItems.push({ id: 'tab-informes', text: '📊 Reportes (RNF-02)' });
+      }
+
+      menuItems.forEach((item) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<a href="#" class="${item.active ? 'active' : ''}" onclick="showTab('${item.id}', this)">${item.text}</a>`;
+        nav.appendChild(li);
+      });
+    }
+
+    function showTab(tabId, element) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('#sidebar-nav a').forEach(link => link.classList.remove('active'));
+      
+      document.getElementById(tabId).classList.add('active');
+      element.classList.add('active');
+
+      if (tabId === 'tab-transiciones') populateTransitionSelect();
+    }
+
+    function renderAll() {
+      renderTable();
+      renderBitacora();
+      populateTransitionSelect();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('inventory-tbody');
+      tbody.innerHTML = '';
+
+      let counts = { registrado: 0, custodia: 0, borrado: 0, disposicion: 0 };
+
+      assets.forEach(item => {
+        if (item.estado === 'Registrado') counts.registrado++;
+        if (item.estado === 'En Custodia') counts.custodia++;
+        if (item.estado === 'Con Borrado Seguro') counts.borrado++;
+        if (item.estado === 'Disposición Final') counts.disposicion++;
+
+        let statusClass = 'registrado';
+        if (item.estado === 'En Custodia') statusClass = 'custodia';
+        if (item.estado === 'Con Borrado Seguro') statusClass = 'borrado';
+        if (item.estado === 'Disposición Final') statusClass = 'disposicion';
+
+        tbody.innerHTML += `
+          <tr>
+            <td><strong>${item.codigo}</strong></td>
+            <td>${item.marca} (${item.tipo})</td>
+            <td>${item.serie}</td>
+            <td>${item.rut_responsable || item.rut}</td>
+            <td>${item.motivo}</td>
+            <td><span class="status ${statusClass}">${item.estado}</span></td>
+            <td>${item.certificado && item.certificado !== 'N/A' ? `📄 ${item.certificado}` : '<span style="color:#94a3b8">Pendiente</span>'}</td>
+          </tr>
+        `;
+      });
+
+      document.getElementById('count-total').innerText = assets.length;
+      document.getElementById('count-registrados').innerText = counts.registrado;
+      document.getElementById('count-custodia').innerText = counts.custodia;
+      document.getElementById('count-borrado').innerText = counts.borrado;
+      document.getElementById('count-disposicion').innerText = counts.disposicion;
+    }
+
+    function renderBitacora() {
+      const tbody = document.getElementById('movements-tbody');
+      tbody.innerHTML = '';
+      bitacora.forEach(log => {
+        tbody.innerHTML += `
+          <tr>
+            <td><small>${log.fecha}</small></td>
+            <td><strong>${log.codigo_activo || log.codigo}</strong></td>
+            <td>${log.estado_anterior || log.anterior}</td>
+            <td><span class="status custodia">${log.nuevo_estado || log.nuevo}</span></td>
+            <td>${log.usuario}</td>
+            <td>${log.detalle}</td>
+          </tr>
+        `;
+      });
+    }
+
+    async function addAsset(event) {
+      event.preventDefault();
+      const payload = {
+        accion: 'crear',
+        codigo: document.getElementById('add-codigo').value.trim(),
+        serie: document.getElementById('add-serie').value.trim(),
+        marca: document.getElementById('add-marca').value.trim(),
+        rut: document.getElementById('add-rut').value.trim(),
+        tipo: document.getElementById('add-tipo').value,
+        motivo: document.getElementById('add-motivo').value,
+        usuario: `${currentUser.name} (${currentUser.role})`
+      };
+
+      try {
+        const response = await fetch('api/activos.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const res = await response.json();
+        if (res.success) {
+          alert(`✅ Activo ${payload.codigo} guardado exitosamente en MySQL.`);
+          document.getElementById('add-asset-form').reset();
+          await loadDataFromDatabase();
+          showTab('tab-inventario', document.querySelectorAll('#sidebar-nav a')[0]);
+        }
+      } catch (err) {
+        alert('Error al guardar en MySQL');
+      }
+    }
+
+    function populateTransitionSelect() {
+      const select = document.getElementById('trans-asset-select');
+      if (!select) return;
+      select.innerHTML = '';
+      
+      const eligibleAssets = assets.filter(a => a.estado !== 'Disposición Final');
+      
+      if (eligibleAssets.length === 0) {
+        select.innerHTML = '<option value="">No hay activos pendientes de transición</option>';
+        updateTransitionOptions();
+        return;
+      }
+
+      eligibleAssets.forEach(item => {
+        select.innerHTML += `<option value="${item.codigo}">${item.codigo} - ${item.marca} (Estado: ${item.estado})</option>`;
+      });
+      updateTransitionOptions();
+    }
+
+    function updateTransitionOptions() {
+      const selectAsset = document.getElementById('trans-asset-select');
+      const selectNext = document.getElementById('trans-next-state');
+      const certGroup = document.getElementById('group-cert-file');
+      
+      if (!selectAsset || !selectAsset.value) {
+        selectNext.innerHTML = '<option value="">Sin opciones</option>';
+        return;
+      }
+
+      const asset = assets.find(a => a.codigo === selectAsset.value);
+      const nextState = STATE_FLOW[asset.estado];
+
+      selectNext.innerHTML = `<option value="${nextState}">${nextState}</option>`;
+
+      if (nextState === 'Disposición Final') {
+        certGroup.style.display = 'flex';
+        document.getElementById('trans-cert').required = true;
+      } else {
+        certGroup.style.display = 'none';
+        document.getElementById('trans-cert').required = false;
+      }
+    }
+
+    async function processTransition(event) {
+      event.preventDefault();
+      const code = document.getElementById('trans-asset-select').value;
+      const nextState = document.getElementById('trans-next-state').value;
+      const location = document.getElementById('trans-ubicacion').value;
+      const certFile = document.getElementById('trans-cert').value || 'N/A';
+
+      const asset = assets.find(a => a.codigo === code);
+
+      const payload = {
+        accion: 'actualizar_estado',
+        codigo: code,
+        estado_anterior: asset.estado,
+        nuevo_estado: nextState,
+        cert: certFile,
+        usuario: `${currentUser.name} (${currentUser.role})`,
+        detalle: location
+      };
+
+      try {
+        const response = await fetch('api/activos.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const res = await response.json();
+        if (res.success) {
+          alert(`🔄 Estado actualizado en MySQL a: ${nextState}`);
+          await loadDataFromDatabase();
+          showTab('tab-inventario', document.querySelectorAll('#sidebar-nav a')[0]);
+        }
+      } catch (err) {
+        alert('Error al actualizar en MySQL');
+      }
+    }
+
+    function downloadCSV() {
+      let csvContent = "data:text/csv;charset=utf-8,Codigo,Tipo,Marca,Serie,RUT_Responsable,Motivo,Estado,Certificado\n";
+      
+      assets.forEach(a => {
+        let row = [
+          a.codigo,
+          a.tipo,
+          `"${a.marca}"`,
+          a.serie,
+          a.rut_responsable || a.rut,
+          `"${a.motivo}"`,
+          a.estado,
+          a.certificado || 'N/A'
         ];
+        csvContent += row.join(",") + "\n";
+      });
 
-        // GESTIÓN DE SESIÓN
-        function login(role, name) {
-            currentUser = { role, name };
-            document.getElementById('login-overlay').style.display = 'none';
-            document.getElementById('user-name-display').innerText = name;
-            document.getElementById('user-role-display').innerText = role.toUpperCase();
-            
-            applyRolePermissions();
-            renderTable();
-            populateMoveSelect();
-        }
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `reporte_activos_siscointec_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
 
-        // CONTROL DE PERMISOS SEGÚN ROL
-        function applyRolePermissions() {
-            const role = currentUser.role;
+    function downloadPDF() {
+      const printWindow = window.open('', '_blank');
+      
+      let htmlContent = `
+        <html>
+        <head>
+          <title>Informe Consolidado - Siscointec</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 25px; color: #1e293b; }
+            .header { border-bottom: 2px solid #0f172a; padding-bottom: 10px; margin-bottom: 20px; }
+            h1 { font-size: 18px; color: #0f172a; margin: 0; text-transform: uppercase; }
+            p { font-size: 11px; color: #64748b; margin: 5px 0 0 0; }
+            table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 11px; }
+            th, td { border: 1px solid #cbd5e1; padding: 8px; text-align: left; }
+            th { background-color: #f1f5f9; color: #0f172a; font-weight: bold; text-transform: uppercase; }
+            tr:nth-child(even) { background-color: #f8fafc; }
+            .footer { margin-top: 30px; font-size: 10px; color: #94a3b8; text-align: right; border-top: 1px solid #e2e8f0; padding-top: 10px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>NexoTech Servicios SpA — Sistema Siscointec</h1>
+            <p>Informe Consolidado de Activos Tecnológicos Obsoletos | Fecha: ${new Date().toLocaleString()} | Generado por: ${currentUser.name} (${currentUser.role})</p>
+          </div>
+          
+          <h3>Listado General de Inventario y Trazabilidad</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Equipo / Marca</th>
+                <th>N° Serie</th>
+                <th>RUT Resp.</th>
+                <th>Motivo Baja</th>
+                <th>Estado Actual</th>
+                <th>Certificado</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
 
-            // Deshabilitar botón de informes a roles no autorizados
-            const reportBtn = document.getElementById('btn-report-gen');
-            const reportRecicBtn = document.getElementById('btn-report-recic');
-            
-            if (role === 'bodeguero') {
-                reportBtn.disabled = true;
-                reportRecicBtn.disabled = true;
-            } else {
-                reportBtn.disabled = false;
-                reportRecicBtn.disabled = false;
-            }
-        }
+      assets.forEach(a => {
+        htmlContent += `
+          <tr>
+            <td><strong>${a.codigo}</strong></td>
+            <td>${a.marca} (${a.tipo})</td>
+            <td>${a.serie}</td>
+            <td>${a.rut_responsable || a.rut}</td>
+            <td>${a.motivo}</td>
+            <td>${a.estado}</td>
+            <td>${a.certificado || a.cert || 'N/A'}</td>
+          </tr>
+        `;
+      });
 
-        // NAVEGACIÓN PESTAÑAS
-        function showTab(tabId, element) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.nav-links a').forEach(link => link.classList.remove('active'));
-            
-            document.getElementById(tabId).classList.add('active');
-            element.classList.add('active');
+      htmlContent += `
+            </tbody>
+          </table>
+          <div class="footer">
+            <p>Plataforma de Trazabilidad Siscointec Pro — Cumplimiento Ley REP y Auditoría TI (EPE2)</p>
+          </div>
+        </body>
+        </html>
+      `;
 
-            // Actualizar título
-            const titles = {
-                'tab-inventario': 'Inventario General de Activos',
-                'tab-ingreso': 'Ingreso de Nuevos Equipos',
-                'tab-movimientos': 'Gestión de Movimientos y Asignaciones',
-                'tab-informes': 'Generación de Reportes e Informes'
-            };
-            document.getElementById('page-title').innerText = titles[tabId];
-        }
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+      printWindow.focus();
+      
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 400);
+    }
 
-        // RENDERIZAR TABLA DE INVENTARIO
-        function renderTable() {
-            const tbody = document.getElementById('inventory-tbody');
-            tbody.innerHTML = '';
+    function filterTable() {
+      const input = document.getElementById('search-input').value.toUpperCase();
+      const rows = document.getElementById('inventory-tbody').getElementsByTagName('tr');
 
-            let countDispo = 0, countAsig = 0, countRep = 0;
-
-            assets.forEach((item, index) => {
-                if (item.estado === 'Disponible') countDispo++;
-                if (item.estado === 'Asignado') countAsig++;
-                if (item.estado === 'En Reparación') countRep++;
-
-                let statusClass = 'disponible';
-                if (item.estado === 'Asignado') statusClass = 'asignado';
-                if (item.estado === 'En Reparación') statusClass = 'reparacion';
-                if (item.estado === 'Dado de Baja / Reciclado') statusClass = 'reciclado';
-
-                // Botones dinámicos según permisos del rol
-                let actionsHtml = '';
-
-                // Botón Enviar a Reciclaje (Permitido para Técnico Informático y Jefatura)
-                if (currentUser.role === 'tecnico' || currentUser.role === 'jefatura') {
-                    actionsHtml += `<button class="btn btn-warning action-btn" onclick="recycleAsset(${index})">♻️ Reciclar</button>`;
-                }
-
-                // Botón Eliminar Físicamente (Solo permitido para Jefatura)
-                if (currentUser.role === 'jefatura') {
-                    actionsHtml += `<button class="btn btn-danger action-btn" onclick="deleteAsset(${index})">🗑️ Eliminar</button>`;
-                }
-
-                if (actionsHtml === '') actionsHtml = '<small style="color:#94a3b8">Sin acciones</small>';
-
-                const row = `
-                    <tr>
-                        <td><strong>${item.codigo}</strong></td>
-                        <td>${item.tipo}</td>
-                        <td>${item.marca}</td>
-                        <td>${item.serie}</td>
-                        <td>${item.ubicacion}</td>
-                        <td>${item.responsable}</td>
-                        <td><span class="status ${statusClass}">${item.estado}</span></td>
-                        <td>${actionsHtml}</td>
-                    </tr>
-                `;
-                tbody.innerHTML += row;
-            });
-
-            // Actualizar contadores
-            document.getElementById('count-total').innerText = assets.length;
-            document.getElementById('count-disponibles').innerText = countDispo;
-            document.getElementById('count-asignados').innerText = countAsig;
-            document.getElementById('count-reparacion').innerText = countRep;
-        }
-
-        // REGISTRAR NUEVO ACTIVO
-        function addAsset(event) {
-            event.preventDefault();
-            const newAsset = {
-                codigo: document.getElementById('add-codigo').value,
-                tipo: document.getElementById('add-tipo').value,
-                marca: document.getElementById('add-marca').value,
-                serie: document.getElementById('add-serie').value,
-                ubicacion: document.getElementById('add-ubicacion').value,
-                responsable: 'Sin asignar',
-                estado: 'Disponible'
-            };
-
-            assets.push(newAsset);
-            renderTable();
-            populateMoveSelect();
-            document.getElementById('add-asset-form').reset();
-            alert(`Equipo ${newAsset.codigo} ingresado correctamente al inventario.`);
-            showTab('tab-inventario', document.querySelectorAll('.nav-links a')[0]);
-        }
-
-        // LLENAR SELECT DE MOVIMIENTOS
-        function populateMoveSelect() {
-            const select = document.getElementById('move-asset-select');
-            select.innerHTML = '';
-            assets.forEach((item, index) => {
-                select.innerHTML += `<option value="${index}">${item.codigo} - ${item.marca} (${item.estado})</option>`;
-            });
-        }
-
-        // REGISTRAR MOVIMIENTO
-        function registerMovement(event) {
-            event.preventDefault();
-            const index = document.getElementById('move-asset-select').value;
-            assets[index].estado = document.getElementById('move-estado').value;
-            assets[index].responsable = document.getElementById('move-responsable').value;
-            assets[index].ubicacion = document.getElementById('move-ubicacion').value;
-
-            renderTable();
-            alert('Movimiento registrado correctamente.');
-            showTab('tab-inventario', document.querySelectorAll('.nav-links a')[0]);
-        }
-
-        // RECICLAR / DAR DE BAJA
-        function recycleAsset(index) {
-            if (confirm(`¿Confirmas enviar a RECICLAJE / DAR DE BAJA el activo ${assets[index].codigo}?`)) {
-                assets[index].estado = 'Dado de Baja / Reciclado';
-                assets[index].ubicacion = 'Bodega de Desecho / Reciclaje';
-                assets[index].responsable = 'N/A';
-                renderTable();
-                populateMoveSelect();
-            }
-        }
-
-        // ELIMINAR REGISTRO (SOLO JEFATURA)
-        function deleteAsset(index) {
-            if (confirm(`[JEFATURA] ¿Está seguro de ELIMINAR DEFINITIVAMENTE el activo ${assets[index].codigo}? Esta acción no se puede deshacer.`)) {
-                assets.splice(index, 1);
-                renderTable();
-                populateMoveSelect();
-            }
-        }
-
-        // FILTRADO EN TABLA
-        function filterTable() {
-            const input = document.getElementById('search-input').value.toUpperCase();
-            const rows = document.getElementById('inventory-tbody').getElementsByTagName('tr');
-
-            for (let i = 0; i < rows.length; i++) {
-                const text = rows[i].innerText.toUpperCase();
-                rows[i].style.display = text.indexOf(input) > -1 ? '' : 'none';
-            }
-        }
-
-        // GENERAR INFORMES
-        function generateReport(title) {
-            const output = document.getElementById('report-output');
-            output.style.display = 'block';
-            
-            const date = new Date().toLocaleString();
-            let reportText = `=========================================================\n`;
-            reportText += `INFORME EJECUTIVO: ${title.toUpperCase()}\n`;
-            reportText += `FECHA DE EMISIÓN: ${date}\n`;
-            reportText += `GENERADO POR: ${currentUser.name} (${currentUser.role.toUpperCase()})\n`;
-            reportText += `=========================================================\n\n`;
-            
-            assets.forEach(a => {
-                reportText += `[${a.codigo}] ${a.tipo} - ${a.marca} | Serie: ${a.serie} | Ubic: ${a.ubicacion} | Estado: ${a.estado}\n`;
-            });
-
-            reportText += `\n--- FIN DEL INFORME - SISCOINTEC SERVICIOS SPA ---`;
-            output.innerText = reportText;
-        }
-    </script>
+      for (let i = 0; i < rows.length; i++) {
+        const text = rows[i].innerText.toUpperCase();
+        rows[i].style.display = text.indexOf(input) > -1 ? '' : 'none';
+      }
+    }
+  </script>
 </body>
 </html>
