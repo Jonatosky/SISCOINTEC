@@ -4,15 +4,17 @@ header("Access-Control-Allow-Headers: Content-Type");
 header("Content-Type: application/json; charset=UTF-8");
 
 $host = "localhost";
-$db   = "siscointec_db";
+$db = "siscointec_db";
 $user = "root";
 $pass = "";
 
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    echo json_encode(["error" => "Error de conexión: " . $e->getMessage()]);
+// Conexión mediante MySQLi (compatible con activos.php)
+$conn = new mysqli($host, $user, $pass, $db);
+
+if ($conn->connect_error) {
+    echo json_encode(["success" => false, "error" => "Error de conexión: " . $conn->connect_error]);
     exit();
 }
+
+$conn->set_charset("utf8");
 ?>

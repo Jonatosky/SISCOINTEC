@@ -375,15 +375,21 @@
 
     async function loadDataFromDatabase() {
       try {
-        const response = await fetch('api/activos.php');
-        const data = await response.json();
-        
-        if (data.activos) assets = data.activos;
-        if (data.bitacora) bitacora = data.bitacora;
-        
+        const resActivos = await fetch('api/activos.php');
+        const textActivos = await resActivos.text();
+        if (textActivos && textActivos.trim() !== "") {
+          assets = JSON.parse(textActivos);
+        }
+
+        const resBitacora = await fetch('api/activos.php?accion=historial');
+        const textBitacora = await resBitacora.text();
+        if (textBitacora && textBitacora.trim() !== "") {
+          bitacora = JSON.parse(textBitacora);
+        }
+
         renderAll();
       } catch (error) {
-        console.error('Error al conectar con la API PHP/MySQL:', error);
+        console.error("Error al cargar datos desde MySQL:", error);
       }
     }
 
@@ -457,24 +463,25 @@
       let counts = { registrado: 0, custodia: 0, borrado: 0, disposicion: 0 };
 
       assets.forEach(item => {
-        if (item.estado === 'Registrado') counts.registrado++;
-        if (item.estado === 'En Custodia') counts.custodia++;
-        if (item.estado === 'Con Borrado Seguro') counts.borrado++;
-        if (item.estado === 'Disposición Final') counts.disposicion++;
+        const estado = item.estado || 'Registrado';
+        if (estado === 'Registrado') counts.registrado++;
+        if (estado === 'En Custodia') counts.custodia++;
+        if (estado === 'Con Borrado Seguro') counts.borrado++;
+        if (estado === 'Disposición Final') counts.disposicion++;
 
         let statusClass = 'registrado';
-        if (item.estado === 'En Custodia') statusClass = 'custodia';
-        if (item.estado === 'Con Borrado Seguro') statusClass = 'borrado';
-        if (item.estado === 'Disposición Final') statusClass = 'disposicion';
+        if (estado === 'En Custodia') statusClass = 'custodia';
+        if (estado === 'Con Borrado Seguro') statusClass = 'borrado';
+        if (estado === 'Disposición Final') statusClass = 'disposicion';
 
         tbody.innerHTML += `
           <tr>
             <td><strong>${item.codigo}</strong></td>
             <td>${item.marca} (${item.tipo})</td>
             <td>${item.serie}</td>
-            <td>${item.rut_responsable || item.rut}</td>
+            <td>${item.rut_responsable || item.rut || 'N/A'}</td>
             <td>${item.motivo}</td>
-            <td><span class="status ${statusClass}">${item.estado}</span></td>
+            <td><span class="status ${statusClass}">${estado}</span></td>
             <td>${item.certificado && item.certificado !== 'N/A' ? `📄 ${item.certificado}` : '<span style="color:#94a3b8">Pendiente</span>'}</td>
           </tr>
         `;
@@ -494,9 +501,9 @@
         tbody.innerHTML += `
           <tr>
             <td><small>${log.fecha}</small></td>
-            <td><strong>${log.codigo_activo || log.codigo}</strong></td>
-            <td>${log.estado_anterior || log.anterior}</td>
-            <td><span class="status custodia">${log.nuevo_estado || log.nuevo}</span></td>
+            <td><strong>${log.codigo_activo}</strong></td>
+            <td>${log.estado_anterior}</td>
+            <td><span class="status custodia">${log.nuevo_estado}</span></td>
             <td>${log.usuario}</td>
             <td>${log.detalle}</td>
           </tr>
@@ -523,15 +530,26 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        const res = await response.json();
+        
+        const textRes = await response.text();
+        let res;
+        try {
+          res = JSON.parse(textRes);
+        } catch (e) {
+          throw new Error("Respuesta inválida del servidor: " + textRes);
+        }
+
         if (res.success) {
           alert(`✅ Activo ${payload.codigo} guardado exitosamente en MySQL.`);
           document.getElementById('add-asset-form').reset();
           await loadDataFromDatabase();
           showTab('tab-inventario', document.querySelectorAll('#sidebar-nav a')[0]);
+        } else {
+          alert('Error al guardar: ' + (res.error || 'Desconocido'));
         }
       } catch (err) {
-        alert('Error al guardar en MySQL');
+        console.error("Detalle:", err);
+        alert('Error de conexión con la API MySQL: ' + err.message);
       }
     }
 
@@ -549,7 +567,7 @@
       }
 
       eligibleAssets.forEach(item => {
-        select.innerHTML += `<option value="${item.codigo}">${item.codigo} - ${item.marca} (Estado: ${item.estado})</option>`;
+        select.innerHTML += `<option value="${item.codigo}">${item.codigo} - ${item.marca} (Estado: ${item.estado || 'Registrado'})</option>`;
       });
       updateTransitionOptions();
     }
@@ -565,7 +583,13 @@
       }
 
       const asset = assets.find(a => a.codigo === selectAsset.value);
-      const nextState = STATE_FLOW[asset.estado];
+      const currentEstado = asset ? (asset.estado || 'Registrado') : 'Registrado';
+      const nextState = STATE_FLOW[currentEstado];
+
+      if (!nextState) {
+        selectNext.innerHTML = '<option value="">Sin transiciones disponibles</option>';
+        return;
+      }
 
       selectNext.innerHTML = `<option value="${nextState}">${nextState}</option>`;
 
@@ -590,7 +614,7 @@
       const payload = {
         accion: 'actualizar_estado',
         codigo: code,
-        estado_anterior: asset.estado,
+        estado_anterior: asset.estado || 'Registrado',
         nuevo_estado: nextState,
         cert: certFile,
         usuario: `${currentUser.name} (${currentUser.role})`,
@@ -608,9 +632,11 @@
           alert(`🔄 Estado actualizado en MySQL a: ${nextState}`);
           await loadDataFromDatabase();
           showTab('tab-inventario', document.querySelectorAll('#sidebar-nav a')[0]);
+        } else {
+          alert('Error al actualizar: ' + (res.error || 'Desconocido'));
         }
       } catch (err) {
-        alert('Error al actualizar en MySQL');
+        alert('Error de conexión con la API MySQL');
       }
     }
 
@@ -623,9 +649,9 @@
           a.tipo,
           `"${a.marca}"`,
           a.serie,
-          a.rut_responsable || a.rut,
+          a.rut_responsable || a.rut || 'N/A',
           `"${a.motivo}"`,
-          a.estado,
+          a.estado || 'Registrado',
           a.certificado || 'N/A'
         ];
         csvContent += row.join(",") + "\n";
@@ -687,10 +713,10 @@
             <td><strong>${a.codigo}</strong></td>
             <td>${a.marca} (${a.tipo})</td>
             <td>${a.serie}</td>
-            <td>${a.rut_responsable || a.rut}</td>
+            <td>${a.rut_responsable || a.rut || 'N/A'}</td>
             <td>${a.motivo}</td>
-            <td>${a.estado}</td>
-            <td>${a.certificado || a.cert || 'N/A'}</td>
+            <td>${a.estado || 'Registrado'}</td>
+            <td>${a.certificado || 'N/A'}</td>
           </tr>
         `;
       });
@@ -699,7 +725,7 @@
             </tbody>
           </table>
           <div class="footer">
-            <p>Plataforma de Trazabilidad Siscointec Pro — Cumplimiento Ley REP y Auditoría TI (EPE2)</p>
+            <p>Plataforma de Trazabilidad Siscointec Pro — Cumplimiento Ley REP y Auditoría TI (EPE3)</p>
           </div>
         </body>
         </html>
