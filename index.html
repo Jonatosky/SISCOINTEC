@@ -185,7 +185,7 @@
         <div id="user-name-display" style="font-weight: 600; font-size: 0.95rem;">Usuario</div>
         <div class="role-badge" id="user-role-display">Rol</div>
         <br><br>
-        <a href="#" onclick="location.reload()" style="color: #f87171; font-size: 0.8rem; text-decoration: none; font-weight: 600;">🔒 Cerrar Sesión</a>
+        <a href="#" onclick="handleLogout()" style="color: #f87171; font-size: 0.8rem; text-decoration: none; font-weight: 600;">🔒 Cerrar Sesión</a>
       </div>
     </aside>
 
@@ -312,8 +312,8 @@
                 <input type="text" id="trans-ubicacion" placeholder="Ej: Bodega A-2 / Estante 3" required>
               </div>
               <div class="form-group" id="group-cert-file" style="display: none;">
-                <label>Nombre / Certificado PDF de Reciclaje (RF-05)</label>
-                <input type="text" id="trans-cert" placeholder="Ej: CERT-RECICLAJE-9982.pdf">
+                <label>Adjuntar Certificado PDF de Reciclaje (RF-05)</label>
+                <input type="file" id="trans-cert-file" accept=".pdf">
               </div>
             </div>
             <button type="submit" class="btn btn-success">Avanzar Estado en MySQL</button>
@@ -357,12 +357,6 @@
   </div>
 
   <script>
-    const USERS = {
-      bodega: { pass: '1234', name: 'Juan Pérez', role: 'Encargado de Bodega', code: 'bodega' },
-      tecnico: { pass: '1234', name: 'Carlos Soto', role: 'Técnico de Soporte TI', code: 'tecnico' },
-      jefatura: { pass: '1234', name: 'María González', role: 'Auditora / Gerencia', code: 'jefatura' }
-    };
-
     let currentUser = null;
     let assets = [];
     let bitacora = [];
@@ -372,6 +366,64 @@
       'En Custodia': 'Con Borrado Seguro',
       'Con Borrado Seguro': 'Disposición Final'
     };
+
+    // Verificar si ya hay sesión activa al cargar la página
+    window.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const res = await fetch('api/activos.php?accion=check_session');
+        const data = await res.json();
+        if (data.logged) {
+          currentUser = data.user;
+          initApp();
+        }
+      } catch (e) {
+        console.error("No se pudo verificar la sesión", e);
+      }
+    });
+
+    function initApp() {
+      document.getElementById('login-overlay').style.display = 'none';
+      document.getElementById('app').style.display = 'flex';
+      
+      document.getElementById('user-name-display').innerText = currentUser.name;
+      document.getElementById('user-role-display').innerText = currentUser.role;
+
+      buildMenu();
+      loadDataFromDatabase();
+    }
+
+    async function handleLogin(event) {
+      event.preventDefault();
+      const userInput = document.getElementById('login-user').value.trim().toLowerCase();
+      const passInput = document.getElementById('login-pass').value.trim();
+
+      try {
+        const response = await fetch('api/activos.php?accion=login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ usuario: userInput, password: passInput })
+        });
+        const res = await response.json();
+
+        if (res.success) {
+          currentUser = res.user;
+          initApp();
+        } else {
+          alert('❌ ' + (res.error || 'Credenciales incorrectas'));
+        }
+      } catch (err) {
+        alert('Error de conexión al iniciar sesión');
+      }
+    }
+
+    async function handleLogout() {
+      try {
+        await fetch('api/activos.php?accion=logout');
+        location.reload();
+      } catch (e) {
+        location.reload();
+      }
+    }
 
     async function loadDataFromDatabase() {
       try {
@@ -390,26 +442,6 @@
         renderAll();
       } catch (error) {
         console.error("Error al cargar datos desde MySQL:", error);
-      }
-    }
-
-    function handleLogin(event) {
-      event.preventDefault();
-      const userInput = document.getElementById('login-user').value.trim().toLowerCase();
-      const passInput = document.getElementById('login-pass').value.trim();
-
-      if (USERS[userInput] && USERS[userInput].pass === passInput) {
-        currentUser = USERS[userInput];
-        document.getElementById('login-overlay').style.display = 'none';
-        document.getElementById('app').style.display = 'flex';
-        
-        document.getElementById('user-name-display').innerText = currentUser.name;
-        document.getElementById('user-role-display').innerText = currentUser.role;
-
-        buildMenu();
-        loadDataFromDatabase();
-      } else {
-        alert('❌ Credenciales incorrectas. Intenta con: bodega, tecnico o jefatura (clave: 1234)');
       }
     }
 
@@ -474,6 +506,10 @@
         if (estado === 'Con Borrado Seguro') statusClass = 'borrado';
         if (estado === 'Disposición Final') statusClass = 'disposicion';
 
+        const certLink = item.certificado && item.certificado !== 'N/A' 
+          ? `<a href="uploads/${item.certificado}" target="_blank" style="color:#3b82f6; font-weight:600; text-decoration:none;">📄 Descargar PDF</a>` 
+          : '<span style="color:#94a3b8">Pendiente</span>';
+
         tbody.innerHTML += `
           <tr>
             <td><strong>${item.codigo}</strong></td>
@@ -482,7 +518,7 @@
             <td>${item.rut_responsable || item.rut || 'N/A'}</td>
             <td>${item.motivo}</td>
             <td><span class="status ${statusClass}">${estado}</span></td>
-            <td>${item.certificado && item.certificado !== 'N/A' ? `📄 ${item.certificado}` : '<span style="color:#94a3b8">Pendiente</span>'}</td>
+            <td>${certLink}</td>
           </tr>
         `;
       });
@@ -520,8 +556,7 @@
         marca: document.getElementById('add-marca').value.trim(),
         rut: document.getElementById('add-rut').value.trim(),
         tipo: document.getElementById('add-tipo').value,
-        motivo: document.getElementById('add-motivo').value,
-        usuario: `${currentUser.name} (${currentUser.role})`
+        motivo: document.getElementById('add-motivo').value
       };
 
       try {
@@ -595,10 +630,10 @@
 
       if (nextState === 'Disposición Final') {
         certGroup.style.display = 'flex';
-        document.getElementById('trans-cert').required = true;
+        document.getElementById('trans-cert-file').required = true;
       } else {
         certGroup.style.display = 'none';
-        document.getElementById('trans-cert').required = false;
+        document.getElementById('trans-cert-file').required = false;
       }
     }
 
@@ -607,25 +642,21 @@
       const code = document.getElementById('trans-asset-select').value;
       const nextState = document.getElementById('trans-next-state').value;
       const location = document.getElementById('trans-ubicacion').value;
-      const certFile = document.getElementById('trans-cert').value || 'N/A';
+      const fileInput = document.getElementById('trans-cert-file');
 
-      const asset = assets.find(a => a.codigo === code);
-
-      const payload = {
-        accion: 'actualizar_estado',
-        codigo: code,
-        estado_anterior: asset.estado || 'Registrado',
-        nuevo_estado: nextState,
-        cert: certFile,
-        usuario: `${currentUser.name} (${currentUser.role})`,
-        detalle: location
-      };
+      const formData = new FormData();
+      formData.append('accion', 'actualizar_estado');
+      formData.append('codigo', code);
+      formData.append('nuevo_estado', nextState);
+      formData.append('detalle', location);
+      if (fileInput.files.length > 0) {
+        formData.append('certificado_file', fileInput.files[0]);
+      }
 
       try {
         const response = await fetch('api/activos.php', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          body: formData
         });
         const res = await response.json();
         if (res.success) {
